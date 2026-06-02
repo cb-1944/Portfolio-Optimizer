@@ -8,6 +8,7 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 import logging
+import requests
 from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
@@ -43,13 +44,18 @@ def fetch_stock_data(years: int = 11) -> dict:
     start_str = start_date.strftime("%Y-%m-%d")
     end_str = end_date.strftime("%Y-%m-%d")
 
+    session = requests.Session()
+    session.headers.update({
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+    })
+
     logger.info(f"Fetching data from {start_str} to {end_str} ({years} years)")
 
     result = {"stocks": {}, "nifty": None, "vix": None, "metadata": {}}
 
     # --- Fetch Nifty 50 Index ---
     logger.info("Fetching Nifty 50 index data...")
-    nifty_data = yf.download(NIFTY_INDEX, start=start_str, end=end_str, progress=False)
+    nifty_data = yf.download(NIFTY_INDEX, start=start_str, end=end_str, session=session, progress=False)
     if nifty_data.empty:
         raise ValueError("Failed to fetch Nifty 50 index data")
     # Flatten multi-level columns if present
@@ -61,7 +67,7 @@ def fetch_stock_data(years: int = 11) -> dict:
     # --- Fetch India VIX ---
     logger.info("Fetching India VIX data...")
     try:
-        vix_data = yf.download(INDIA_VIX, start=start_str, end=end_str, progress=False)
+        vix_data = yf.download(INDIA_VIX, start=start_str, end=end_str, session=session, progress=False)
         if isinstance(vix_data.columns, pd.MultiIndex):
             vix_data.columns = vix_data.columns.get_level_values(0)
         if vix_data.empty or len(vix_data) < 100:
@@ -80,7 +86,7 @@ def fetch_stock_data(years: int = 11) -> dict:
     for i, ticker in enumerate(NIFTY_STOCKS):
         logger.info(f"Fetching {ticker} ({i+1}/{len(NIFTY_STOCKS)})...")
         try:
-            stock_data = yf.download(ticker, start=start_str, end=end_str, progress=False)
+            stock_data = yf.download(ticker, start=start_str, end=end_str, session=session, progress=False)
             if isinstance(stock_data.columns, pd.MultiIndex):
                 stock_data.columns = stock_data.columns.get_level_values(0)
             if stock_data.empty or len(stock_data) < 252:
