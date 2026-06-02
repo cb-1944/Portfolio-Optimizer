@@ -9,6 +9,10 @@ import pandas as pd
 import numpy as np
 import logging
 import requests
+from requests import Session
+from requests_cache import CacheMixin, SQLiteCache
+from requests_ratelimiter import LimiterMixin, MemoryQueueBucket
+from pyrate_limiter import Duration, RequestRate, Limiter
 from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
@@ -44,7 +48,14 @@ def fetch_stock_data(years: int = 11) -> dict:
     start_str = start_date.strftime("%Y-%m-%d")
     end_str = end_date.strftime("%Y-%m-%d")
 
-    session = requests.Session()
+    class CachedLimiterSession(CacheMixin, LimiterMixin, Session):
+        pass
+
+    session = CachedLimiterSession(
+        limiter=Limiter(RequestRate(2, Duration.SECOND*5)),  # max 2 requests per 5 seconds
+        bucket_class=MemoryQueueBucket,
+        backend=SQLiteCache("yfinance.cache"),
+    )
     session.headers.update({
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
     })
