@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Intelligent portfolio optimization using LSTM neural networks and Markowitz mean-variance theory, backtested against Nifty 50.">
+    <title>Portfolio Intelligence — Systematic Strategy Engine</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ─── Sidebar ──────────────────────────────────────────── -->
+<nav class="sidebar">
+    <div class="sidebar-brand">
+        <h1>Portfolio Intelligence</h1>
+        <p>Systematic Strategy Engine</p>
+    </div>
+
+    <div class="nav-section-label">Engine</div>
+    <div class="nav-item active" data-section="control">
+        <span class="nav-icon">◈</span> Pipeline Control
+    </div>
+
+    <div class="nav-section-label">Analysis</div>
+    <div class="nav-item" data-section="overview">
+        <span class="nav-icon">◇</span> Performance
+    </div>
+    <div class="nav-item" data-section="allocation">
+        <span class="nav-icon">◎</span> Allocation
+    </div>
+    <div class="nav-item" data-section="equity">
+        <span class="nav-icon">⌇</span> Equity Curve
+    </div>
+    <div class="nav-item" data-section="comparison">
+        <span class="nav-icon">⊞</span> Benchmark
+    </div>
+
+    <div class="nav-section-label">Detail</div>
+    <div class="nav-item" data-section="rebalance">
+        <span class="nav-icon">⟳</span> Rebalance History
+    </div>
+    <div class="nav-item" data-section="training">
+        <span class="nav-icon">⊿</span> Model Diagnostics
+    </div>
+    <div class="nav-item" data-section="logs">
+        <span class="nav-icon">≡</span> System Log
+    </div>
+</nav>
+
+<!-- ─── Main Content ─────────────────────────────────────── -->
+<main class="main-content">
+
+    <!-- Pipeline Control -->
+    <div id="section-control" class="section active">
+        <div class="section-header">
+            <h2>Pipeline Control</h2>
+            <p>Run the full quantitative pipeline — from data ingestion to walk-forward backtest</p>
+        </div>
+        <div class="control-panel">
+            <div class="progress-section">
+                <div class="progress-header">
+                    <h3>Execution Progress</h3>
+                    <div class="status-indicator">
+                        <div class="status-dot idle" id="status-text"></div>
+                        <span id="status-label">Idle</span>
+                    </div>
+                </div>
+                <div class="progress-bar-track">
+                    <div class="progress-bar-fill" id="progress-bar"></div>
+                </div>
+                <div class="progress-details">
+                    <span class="progress-step" id="progress-step">Waiting to start…</span>
+                    <span id="progress-pct">0%</span>
+                </div>
+                <div class="pipeline-steps">
+                    <span class="step-pill" data-step="data_ingestion">Data</span>
+                    <span class="step-pill" data-step="preprocessing">Preprocess</span>
+                    <span class="step-pill" data-step="feature_engineering">Features</span>
+                    <span class="step-pill" data-step="lstm_preparation">Sequences</span>
+                    <span class="step-pill" data-step="lstm_training">LSTM</span>
+                    <span class="step-pill" data-step="predictions">Predict</span>
+                    <span class="step-pill" data-step="backtesting">Backtest</span>
+                    <span class="step-pill" data-step="completed">Done</span>
+                </div>
+            </div>
+            <div class="actions">
+                <button class="btn btn-primary" id="btn-start" onclick="startPipeline()">
+                    Run Pipeline
+                </button>
+                <button class="btn btn-secondary" onclick="resetPipeline()">
+                    Reset
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Overview -->
+    <div id="section-overview" class="section">
+        <div class="section-header">
+            <h2>Performance Overview</h2>
+            <p>Key metrics from the held-out test set backtest</p>
+        </div>
+        <div class="metrics-grid" id="metrics-grid"></div>
+    </div>
+
+    <!-- Allocation -->
+    <div id="section-allocation" class="section">
+        <div class="section-header">
+            <h2>Current Allocation</h2>
+            <p>Most recent optimal portfolio weights from the Markowitz optimizer</p>
+        </div>
+        <div class="charts-grid-two">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Weight Distribution</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chart-allocation"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Predicted Returns vs Weights</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chart-returns-weights"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Equity Curve -->
+    <div id="section-equity" class="section">
+        <div class="section-header">
+            <h2>Equity Curve</h2>
+            <p>Walk-forward backtest with 20-day rebalancing</p>
+        </div>
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header">
+                <span class="card-title" id="equity-chart-title">Portfolio vs Nifty 50</span>
+            </div>
+            <div class="chart-container" style="height: 380px;">
+                <canvas id="chart-equity"></canvas>
+            </div>
+        </div>
+        <div class="charts-grid-two">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Drawdown Analysis</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chart-drawdown"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Rolling 60-Day Returns</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chart-rolling"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Benchmark Comparison -->
+    <div id="section-comparison" class="section">
+        <div class="section-header">
+            <h2>Benchmark Comparison</h2>
+            <p>Head-to-head against the Nifty 50 index — same time period, same market conditions</p>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Strategy vs Index</span>
+            </div>
+            <div id="comparison-content"></div>
+        </div>
+    </div>
+
+    <!-- Rebalance History -->
+    <div id="section-rebalance" class="section">
+        <div class="section-header">
+            <h2>Rebalance History</h2>
+            <p>Every 20-day portfolio rebalancing event</p>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Trade Log</span>
+                <span class="card-badge badge-accent" id="rebalance-count">0 events</span>
+            </div>
+            <div id="rebalance-table"></div>
+        </div>
+    </div>
+
+    <!-- Model Diagnostics -->
+    <div id="section-training" class="section">
+        <div class="section-header">
+            <h2>Model Diagnostics</h2>
+            <p>LSTM training convergence, overfitting analysis, and data split details</p>
+        </div>
+        <div class="charts-grid">
+            <div class="card chart-full">
+                <div class="card-header">
+                    <span class="card-title">Training Convergence</span>
+                    <span class="card-badge badge-success" id="training-epochs">0 epochs</span>
+                </div>
+                <div class="chart-container" style="height: 280px;">
+                    <canvas id="chart-training-loss"></canvas>
+                </div>
+            </div>
+            <div class="card chart-full">
+                <div class="card-header">
+                    <span class="card-title">Overfitting Diagnostic</span>
+                    <span style="font-size:0.7rem;color:var(--text-muted)">
+                        Green &lt;20% &nbsp;·&nbsp; Amber 20–50% &nbsp;·&nbsp; Red &gt;50%
+                    </span>
+                </div>
+                <div class="chart-container" style="height: 220px;">
+                    <canvas id="chart-overfit-gap"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="metrics-grid" id="training-metrics" style="margin-top: 20px;"></div>
+    </div>
+
+    <!-- System Logs -->
+    <div id="section-logs" class="section">
+        <div class="section-header">
+            <h2>System Log</h2>
+            <p>Real-time execution trace</p>
+        </div>
+        <div class="logs-container" id="logs-container"></div>
+    </div>
+
+</main>
+
+<script src="js/app.js"></script>
+</body>
+</html>
