@@ -192,14 +192,3 @@ def preprocess_data(raw_data: dict) -> dict:
         "log_returns": log_returns,
         "nifty_returns": nifty_returns,
     }
-        f"Preprocessing complete: {len(close_df)} days, {len(close_df.columns)} stocks"
-    )
-
-    return {
-        "close": close_df,
-        "volume": volume_df,
-        "nifty_close": nifty_close,
-        "vix_close": vix_close,
-        "log_returns": log_returns,
-        "nifty_returns": nifty_returns,
-    }
