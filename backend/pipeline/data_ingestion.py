@@ -18,7 +18,7 @@ NIFTY_STOCKS = [
     "RELIANCE.NS", "TCS.NS", "HDFCBANK.NS", "INFY.NS", "ICICIBANK.NS",
     "HINDUNILVR.NS", "ITC.NS", "SBIN.NS", "BHARTIARTL.NS", "KOTAKBANK.NS",
     "LT.NS", "AXISBANK.NS", "BAJFINANCE.NS", "MARUTI.NS", "HCLTECH.NS",
-    "SUNPHARMA.NS", "TITAN.NS", "WIPRO.NS", "ADANIENT.NS", "TATAMOTORS.NS",
+    "SUNPHARMA.NS", "TITAN.NS", "WIPRO.NS", "ADANIENT.NS",
 ]
 
 NIFTY_INDEX = "^NSEI"
@@ -181,6 +181,17 @@ def preprocess_data(raw_data: dict) -> dict:
     vix_close = vix_close.iloc[1:]
 
     logger.info(
+        f"Preprocessing complete: {len(close_df)} days, {len(close_df.columns)} stocks"
+    )
+
+    return {
+        "close": close_df,
+        "volume": volume_df,
+        "nifty_close": nifty_close,
+        "vix_close": vix_close,
+        "log_returns": log_returns,
+        "nifty_returns": nifty_returns,
+    }
         f"Preprocessing complete: {len(close_df)} days, {len(close_df.columns)} stocks"
     )
 
