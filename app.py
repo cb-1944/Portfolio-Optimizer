@@ -79,7 +79,7 @@ def progress_callback(step: str, progress: int):
 
 # ─── Pipeline Execution ─────────────────────────────────────────────────────
 
-def run_full_pipeline(years: int = 7):
+def run_full_pipeline(years: int = 2):
     """
     Execute the full ML pipeline end-to-end.
     Runs in a background thread.
@@ -278,7 +278,7 @@ def start_pipeline():
             return jsonify({"error": "Pipeline already running"}), 409
 
     data = request.get_json() or {}
-    years = data.get("years", 7)
+    years = data.get("years", 2)
 
     thread = threading.Thread(target=run_full_pipeline, args=(years,), daemon=True)
     thread.start()
